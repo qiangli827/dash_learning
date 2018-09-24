@@ -1,5 +1,3 @@
-# dash_learning
-
 You can check out the code yourself across a few repositories:
 
 Dash backend: https://github.com/plotly/dash
