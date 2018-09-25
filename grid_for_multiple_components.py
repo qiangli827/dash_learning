@@ -7,10 +7,12 @@ import pandas as pd
 import pyodbc
 
 conn = pyodbc.connect(r'DRIVER={SQL Server Native Client 11.0};SERVER=pc1134\sqlserver2018;DATABASE=sales;UID=sa;PWD=123654')
-sql = "select tb as 表名, duedate as 截止日期, _rows as 行数\
+sql1 = "select tb as 表名, duedate as 截止日期, _rows as 行数\
  from v_db_overview\
  order by tb asc, duedate desc"
-df = pd.read_sql(sql, conn)
+sql2 = "select * from v_ndq5w"
+df_db_overview = pd.read_sql(sql1, conn)
+df_ndq5w = pd.read_sql(sql2, conn)
 conn.close()
 
 
@@ -36,24 +38,6 @@ html.Div(children=[
     ], className = 'row'),
     html.Div(children=[
         html.Div(children=[
-            dcc.Markdown(id='general_info',
-            children='''
-            这里是看板, 汇合了多个图表,表格等信息.
-            1. 列表1
-            2. 列表2
-            3. 列表3
-            ''')
-        ], className = 'four columns'),
-        html.Div(children=[
-            dcc.Markdown(id='code_example',
-            children='''
-            **以下是sql例子**
-            ```sql
-            select id, name, city from person
-            ```
-            ''')
-        ], className = 'four columns'),
-        html.Div(children=[
             html.Div(id='quoted-text',
             children='''
                 The children property is special.
@@ -64,21 +48,33 @@ html.Div(children=[
                 Also, it can contain a string, a number,
                  a single component, or a list of components.
             ''')
-        ], className = 'four columns'),
+        ], className = 'six columns'),
     ], className = 'row')
 ], className = 'row'),
 
 html.Div(children=[
     html.Div(children=[
-        generate_table(df)
-    ], className = 'four columns'),
+        html.H4(children='数据库概览'),
+        generate_table(df_db_overview)
+    ],
+    className = 'six columns'),
+    html.Div(children=[
+        html.H4(children='NDQ5W销售排行榜'),
+        generate_table(df_ndq5w)
+    ],
+    style = {'background-color': 'lightblue'},
+    className = 'six columns')
+], className = 'row'),
+
+html.Div(children=[
     html.Div(children=[
         dcc.Graph(id='bar-chart')
-    ], className = 'four columns'),
+    ], className = 'six columns'),
     html.Div(children=[
         dcc.Graph(id='scatter-chart')
-    ], className = 'four columns')
+    ], className = 'six columns')
 ], className = 'row')
+
 ], className = 'ten columns offset-by-one')
 
 @app.callback(
