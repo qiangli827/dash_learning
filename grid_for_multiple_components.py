@@ -3,6 +3,26 @@ import dash
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
+import pandas as pd
+import pyodbc
+
+conn = pyodbc.connect(r'DRIVER={SQL Server Native Client 11.0};SERVER=pc1134\sqlserver2018;DATABASE=sales;UID=sa;PWD=123654')
+sql = "select tb as 表名, duedate as 截止日期, _rows as 行数\
+ from v_db_overview\
+ order by tb asc, duedate desc"
+df = pd.read_sql(sql, conn)
+conn.close()
+
+
+def generate_table(dataframe, max_rows=10):
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+        # Body
+        [html.Tr([
+            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+        ]) for i in range(min(len(dataframe), max_rows))]
+    )
 
 app = dash.Dash()
 app.title = 'Multiple components'
@@ -50,11 +70,14 @@ html.Div(children=[
 
 html.Div(children=[
     html.Div(children=[
+        generate_table(df)
+    ], className = 'four columns'),
+    html.Div(children=[
         dcc.Graph(id='bar-chart')
-    ], className = 'six columns'),
+    ], className = 'four columns'),
     html.Div(children=[
         dcc.Graph(id='scatter-chart')
-    ], className = 'six columns')
+    ], className = 'four columns')
 ], className = 'row')
 ], className = 'ten columns offset-by-one')
 
