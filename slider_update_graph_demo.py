@@ -7,9 +7,13 @@ import pandas as pd
 import pyodbc
 import plotly.graph_objs as go
 
-df = pd.read_csv(
-    'https://raw.githubusercontent.com/plotly/datasets/master/gapminderDataFiveYear.csv'
-)
+conn = pyodbc.connect(r'DRIVER={SQL Server Native Client 11.0};SERVER=localhost;DATABASE=sales;UID=sa;PWD=123654')
+sql1 = "SELECT year(sjfhrq) as year, xsdqms, xsbscms, hyms, cpxms, sum(hsje_bb) as amount\
+ from zsd013\
+ where xsdqms != '' and xsbscms != '' and hyms != '' and cpxms != ''\
+ group by year(sjfhrq), xsdqms, xsbscms, hyms, cpxms"
+df = pd.read_sql(sql1, conn)
+conn.close()
 
 app = dash.Dash()
 
@@ -36,12 +40,12 @@ app.layout = html.Div([
 def update_figure(selected_year):
     df_filtered = df[df['year'] == selected_year]
     traces = []
-    for i in df_filtered.continent.unique():
-        df_continent = df_filtered[df_filtered['continent'] == i]
+    for i in df_filtered.xsdqms.unique():
+        df_dq = df_filtered[df_filtered['xsdqms'] == i]
         traces.append(go.Scatter(
-            x=df_continent['gdpPercap'],
-            y=df_continent['lifeExp'],
-            text=df_continent['country'],
+            x=df_dq['hyms'],
+            y=df_dq['cpxms'],
+            text=df_dq['amount'],
             mode='markers',
             opacity=.7,
             marker={
@@ -54,8 +58,8 @@ def update_figure(selected_year):
     return {
         'data': traces,
         'layout': go.Layout(
-            xaxis={'type': 'log', 'title': 'GDP Per Capita'},
-            yaxis={'title': 'Life Expectancy', 'range': [20, 90]},
+            xaxis={'type': 'category', 'title': 'industry'},
+            yaxis={'title': 'product line'},
             margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
             legend={'x': 0, 'y': 1},
             hovermode='closest'
