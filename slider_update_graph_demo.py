@@ -49,8 +49,9 @@ def update_figure(selected_year):
             mode='markers',
             opacity=.7,
             marker={
-                'size': 15,
-                'line': {'width': .5, 'color': 'white'}
+                'size': list[df_dq['amount']],
+                'line': {'width': .5, 'color': 'white'},
+                'sizemode': 'diameter'
             },
             name=i
         ))
