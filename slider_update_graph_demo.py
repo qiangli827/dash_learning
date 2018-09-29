@@ -11,9 +11,12 @@ conn = pyodbc.connect(r'DRIVER={SQL Server Native Client 11.0};SERVER=localhost;
 sql1 = "SELECT year(sjfhrq) as year, xsdqms, xsbscms, hyms, cpxms, sum(hsje_bb) as amount\
  from zsd013\
  where xsdqms != '' and xsbscms != '' and hyms != '' and cpxms != ''\
- group by year(sjfhrq), xsdqms, xsbscms, hyms, cpxms"
+  and cpxms != '品牌柜产品线'\
+ group by year(sjfhrq), xsdqms, xsbscms, hyms, cpxms\
+ order by hyms, cpxms"
 df = pd.read_sql(sql1, conn)
 conn.close()
+df = df[df['amount'] >= 0]
 
 app = dash.Dash()
 
@@ -49,9 +52,10 @@ def update_figure(selected_year):
             mode='markers',
             opacity=.7,
             marker={
-                'size': list[df_dq['amount']],
+                'size': df_dq['amount'],
                 'line': {'width': .5, 'color': 'white'},
-                'sizemode': 'diameter'
+                'sizemode': 'area',
+                'sizeref': 2.*max(df_dq['amount'])/(40.**2)
             },
             name=i
         ))
@@ -61,8 +65,8 @@ def update_figure(selected_year):
         'layout': go.Layout(
             xaxis={'type': 'category', 'title': 'industry'},
             yaxis={'title': 'product line'},
-            margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
-            legend={'x': 0, 'y': 1},
+            margin={'l': 100, 'b': 40, 't': 30, 'r': 40},
+            legend={'x': 1, 'y': 1},
             hovermode='closest'
         )
     }
